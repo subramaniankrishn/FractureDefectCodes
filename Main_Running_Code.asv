@@ -45,22 +45,18 @@ load defect_line.txt
 load stress_on_nodes_file.txt
 
 temp = size(defect_line);
-%Defect Line file format is Node ID, Nbr ID, node x,y,z and nbr x,y,z.
+
 num_defect_line_points = temp(1);
-defect_line_node_id = zeros(temp,1);
-defect_line_nbr_id = zeros(temp,1);
+
 defect_line_node = NodeClass;
-defect_line_nbr = NodeClass;
 
 for i=1:num_defect_line_points
-    defect_line_node_id(i) = defect_line(i,1); 
-    defect_line_nbr_id(i) = defect_line(i,2); 
     defect_line_node(i).x = defect_line(i,3);
     defect_line_node(i).y = defect_line(i,4);
     defect_line_node(i).z = defect_line(i,5);
-    defect_line_nbr(i).x = defect_line(i,6);
-    defect_line_nbr(i).y = defect_line(i,7);
-    defect_line_nbr(i).z = defect_line(i,8);
+    defect_line_nbr(i).x = defect_line(i,3);
+    defect_line_node(i).y = defect_line(i,4);
+    defect_line_node(i).z = defect_line(i,5);
 end
 
 %To find the affected elements, find the mid point of the line defect and
@@ -75,9 +71,9 @@ stress_on_nodes = zeros(8,6);
 
 fileID = fopen(file_path,'w'); %Open the file once and close it after writing all the data to the file
 for i=1:num_defect_line_points - 1
-    mid_defect_point(i).x = (defect_line_node(i).x + defect_line_nbr(i).x)/2;
-    mid_defect_point(i).y = (defect_line_node(i).y + defect_line_nbr(i).y)/2;
-    mid_defect_point(i).z = (defect_line_node(i).z + defect_line_nbr(i).z)/2;
+    mid_defect_point(i).x = (defect_line_node(i).x + defect_line_node(i+1).x)/2;
+    mid_defect_point(i).y = (defect_line_node(i).y + defect_line_node(i+1).y)/2;
+    mid_defect_point(i).z = (defect_line_node(i).z + defect_line_node(i+1).z)/2;
     
     %The below loop is to check if the element lies close to the defect
     %point.
@@ -120,15 +116,13 @@ for i=1:num_defect_line_points - 1
             %considered.
             if(abs(local_coords.x) <= 1.00000 && abs(local_coords.y) <= 1.00000 && abs(local_coords.z) <= 1.00000 )
                 mid_defect_point(i).FindStressOnDefectPoint(stress_on_nodes, local_coords);
-                fprintf(fileID, '%d %d %f %f %f %f %f %f \n', defect_line_node_id(i), defect_line_nbr_id(i), mid_defect_point.S11, ...
+                fprintf(fileID, '%d %d %f %f %f %f %f %f \n', defect_line_node(i,1), defect_line_node(i,2), mid_defect_point.S11, ...
                         mid_defect_point.S22, mid_defect_point.S33, mid_defect_point.S23, mid_defect_point.S12, mid_defect_point.S13 );
 
             end
         end
     end
 end
-
-fclose(fileID);
 
 for i=1:num_model_elements
     for j = 1:8

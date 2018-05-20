@@ -82,6 +82,33 @@ classdef MathClass
             distance = sqrt(findSquareOfDistanceBetween2Points(point1, point2));
         end
         
+        function local_coord = FindLocalCoordinatesForPoint(point_to_be_found, element_nodes) %the element nodes are for the nodes inside which the defect point lies inside
+            eta_arr = [1, 1, -1, -1, 1, 1, -1, -1] ;
+            rho_arr = [-1, 1, 1, -1, -1, 1, 1, -1] ;
+            kai_arr = [-1, -1, -1, -1, 1, 1, 1, 1] ;
+            
+            syms eta rho kai
+            eqn11 = 0;
+            eqn22 = 0;
+            eqn33 = 0;
+            
+            for i = 1:8
+                eqn11 = eqn11 + 0.125*(1+eta*eta_arr(i))*(1+rho*rho_arr(i))*(1+kai*kai_arr(i))*element_nodes(i).x;
+                eqn22 = eqn22 + 0.125*(1+eta*eta_arr(i))*(1+rho*rho_arr(i))*(1+kai*kai_arr(i))*element_nodes(i).y;
+                eqn33 = eqn33 + 0.125*(1+eta*eta_arr(i))*(1+rho*rho_arr(i))*(1+kai*kai_arr(i))*element_nodes(i).z;
+            end
+            
+            eqn1 = eqn11 == point_to_be_found.x;
+            eqn2 = eqn22 == point_to_be_found.y;
+            eqn3 = eqn33 == point_to_be_found.z;
+ 
+            sol = solve([eqn1, eqn2, eqn3], [eta, rho, kai]);
+            local_coord.x = sol.eta;
+            local_coord.y = sol.rho;
+            local_coord.z = sol.kai;
+
+        end
+        
     end
 end
 

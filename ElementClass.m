@@ -3,7 +3,7 @@ classdef ElementClass
     %   Detailed explanation goes here
     
     properties
-        node_ids(8,1)
+        node_ids
         gauss_points = NodeClass
         state = 0
     end
